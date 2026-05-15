@@ -85,8 +85,11 @@ export function Shell({ children, dense = false }: { children: ReactNode; dense?
             </div>
           </div>
           <StatusBadge />
+          <ThemeToggle />
           <button className="size-9 rounded-md border border-border bg-[color:var(--surface-2)] flex items-center justify-center relative">
             <Bell className="size-4" />
+            <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-[color:var(--warn)]" />
+          </button>
             <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-[color:var(--warn)]" />
           </button>
           <div className="size-9 rounded-md bg-gradient-to-br from-cyan to-teal text-[color:var(--primary-foreground)] flex items-center justify-center text-xs font-semibold">
