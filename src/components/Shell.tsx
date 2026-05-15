@@ -10,8 +10,10 @@ import {
   Waves,
   Bell,
   Search,
+  Sun,
+  Moon,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
