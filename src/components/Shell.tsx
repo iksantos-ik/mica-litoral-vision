@@ -10,8 +10,10 @@ import {
   Waves,
   Bell,
   Search,
+  Sun,
+  Moon,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -83,6 +85,7 @@ export function Shell({ children, dense = false }: { children: ReactNode; dense?
             </div>
           </div>
           <StatusBadge />
+          <ThemeToggle />
           <button className="size-9 rounded-md border border-border bg-[color:var(--surface-2)] flex items-center justify-center relative">
             <Bell className="size-4" />
             <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-[color:var(--warn)]" />
@@ -110,5 +113,37 @@ export function StatusBadge() {
         MICA Engine · Ativo
       </span>
     </div>
+  );
+}
+
+export function ThemeToggle() {
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  useEffect(() => {
+    const stored = (typeof window !== "undefined" && localStorage.getItem("pgiic-theme")) as
+      | "dark"
+      | "light"
+      | null;
+    if (stored) setTheme(stored);
+  }, []);
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("light", theme === "light");
+    root.classList.toggle("dark", theme === "dark");
+    try {
+      localStorage.setItem("pgiic-theme", theme);
+    } catch {}
+  }, [theme]);
+  const isLight = theme === "light";
+  return (
+    <button
+      onClick={() => setTheme(isLight ? "dark" : "light")}
+      title={isLight ? "Mudar para tema escuro" : "Mudar para tema claro"}
+      className="h-9 px-2 rounded-md border border-border bg-[color:var(--surface-2)] flex items-center gap-1.5"
+    >
+      {isLight ? <Moon className="size-4" /> : <Sun className="size-4" />}
+      <span className="hidden md:inline text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+        {isLight ? "Escuro" : "Claro"}
+      </span>
+    </button>
   );
 }
