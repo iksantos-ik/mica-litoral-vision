@@ -115,3 +115,35 @@ export function StatusBadge() {
     </div>
   );
 }
+
+export function ThemeToggle() {
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  useEffect(() => {
+    const stored = (typeof window !== "undefined" && localStorage.getItem("pgiic-theme")) as
+      | "dark"
+      | "light"
+      | null;
+    if (stored) setTheme(stored);
+  }, []);
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("light", theme === "light");
+    root.classList.toggle("dark", theme === "dark");
+    try {
+      localStorage.setItem("pgiic-theme", theme);
+    } catch {}
+  }, [theme]);
+  const isLight = theme === "light";
+  return (
+    <button
+      onClick={() => setTheme(isLight ? "dark" : "light")}
+      title={isLight ? "Mudar para tema escuro" : "Mudar para tema claro"}
+      className="h-9 px-2 rounded-md border border-border bg-[color:var(--surface-2)] flex items-center gap-1.5"
+    >
+      {isLight ? <Moon className="size-4" /> : <Sun className="size-4" />}
+      <span className="hidden md:inline text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+        {isLight ? "Escuro" : "Claro"}
+      </span>
+    </button>
+  );
+}
