@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Shell } from "@/components/Shell";
 import { CoastMap, vulnLegend, sectors } from "@/components/CoastMap";
 import {
-  Layers, ZoomIn, ZoomOut, Ruler, Pencil, Download, Play, X, Eye, EyeOff,
+  Layers, ZoomIn, ZoomOut, Ruler, Pencil, Download, Play, X, Eye, EyeOff, MapPin, ChevronDown,
 } from "lucide-react";
 
 export const Route = createFileRoute("/mapa")({
@@ -30,6 +30,7 @@ const classColor: Record<string, string> = {
 
 function MapPage() {
   const [selectedId, setSelectedId] = useState("PE-047");
+  const [openSector, setOpenSector] = useState(false);
   const [layers, setLayers] = useState(initialLayers);
   const [fadeKey, setFadeKey] = useState(0);
 
@@ -131,7 +132,43 @@ function MapPage() {
         </div>
 
         {/* Right panel - segment details */}
-        <div key={fadeKey} className="absolute top-4 right-4 w-80 panel p-4 max-h-[calc(100%-2rem)] overflow-auto animate-fade-in">
+        <div key={fadeKey} className="absolute top-4 right-4 w-80 panel p-4 max-h-[calc(100%-2rem)] overflow-visible animate-fade-in">
+          {/* Sector selector */}
+          <div className="relative mb-3 z-30">
+            <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1.5">
+              <MapPin className="size-3 text-teal" /> // selecionar setor
+            </div>
+            <button
+              onClick={() => setOpenSector((o) => !o)}
+              className={`w-full h-9 px-2.5 rounded-md panel-2 border flex items-center justify-between text-xs transition-colors ${
+                openSector ? "border-cyan text-cyan" : "border-border hover:border-cyan/40"
+              }`}
+            >
+              <span className="font-mono truncate">
+                <span className={openSector ? "text-cyan" : "text-teal"}>{sector.id}</span>
+                <span className="text-foreground"> · {sector.name}</span>
+              </span>
+              <ChevronDown className={`size-3.5 shrink-0 ml-2 transition-transform duration-200 ${openSector ? "rotate-180 text-cyan" : "text-muted-foreground"}`} />
+            </button>
+            {openSector && (
+              <div className="absolute z-50 left-0 right-0 mt-1.5 panel p-1 bg-[color:var(--surface)] shadow-2xl max-h-72 overflow-auto animate-fade-in">
+                {sectors.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => { handleSelect(s.id); setOpenSector(false); }}
+                    className={`w-full text-left px-2.5 py-2 rounded text-xs flex items-center gap-2 hover:bg-[color:var(--surface-2)] ${
+                      s.id === selectedId ? "bg-cyan/10" : ""
+                    }`}
+                  >
+                    <span className="font-mono text-teal">{s.id}</span>
+                    <span className="truncate flex-1">{s.name}</span>
+                    <span className="size-2 rounded-sm shrink-0" style={{ background: `var(--vuln-${s.cls})` }} />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="flex items-start justify-between mb-3">
             <div>
               <div className="text-[10px] font-mono uppercase tracking-wider text-teal">setor selecionado</div>

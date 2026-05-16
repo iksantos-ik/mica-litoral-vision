@@ -128,7 +128,7 @@ function MicaPage() {
         </div>
 
         {/* Sector selector */}
-        <div className="panel px-4 py-3 flex items-center gap-4 flex-wrap">
+        <div className="panel px-4 py-3 flex items-center gap-4 flex-wrap relative z-40">
           <div className="text-[11px] font-mono uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
             <MapPin className="size-3.5 text-teal" />
             // setor de análise
@@ -148,7 +148,7 @@ function MicaPage() {
               <ChevronDown className={`size-4 transition-transform duration-200 ${openDropdown ? "rotate-180 text-cyan" : "text-muted-foreground"}`} />
             </button>
             {openDropdown && (
-              <div className="absolute z-20 right-0 left-0 mt-1.5 panel p-1 animate-fade-in max-h-80 overflow-auto">
+              <div className="absolute z-50 right-0 left-0 mt-1.5 panel p-1 animate-fade-in max-h-80 overflow-auto shadow-2xl bg-[color:var(--surface)]">
                 {sectorOptions.map((s) => (
                   <button
                     key={s.id}
