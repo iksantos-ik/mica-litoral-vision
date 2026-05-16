@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Shell } from "@/components/Shell";
 import { CoastMap, vulnLegend, sectors } from "@/components/CoastMap";
 import {
-  Layers, ZoomIn, ZoomOut, Ruler, Pencil, Download, Play, X, Eye, EyeOff,
+  Layers, ZoomIn, ZoomOut, Ruler, Pencil, Download, Play, X, Eye, EyeOff, MapPin, ChevronDown,
 } from "lucide-react";
 
 export const Route = createFileRoute("/mapa")({
