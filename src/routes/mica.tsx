@@ -128,7 +128,7 @@ function MicaPage() {
         </div>
 
         {/* Sector selector */}
-        <div className="panel px-4 py-3 flex items-center gap-4 flex-wrap">
+        <div className="panel px-4 py-3 flex items-center gap-4 flex-wrap relative z-40">
           <div className="text-[11px] font-mono uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
             <MapPin className="size-3.5 text-teal" />
             // setor de análise
