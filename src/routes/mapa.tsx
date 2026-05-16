@@ -30,6 +30,7 @@ const classColor: Record<string, string> = {
 
 function MapPage() {
   const [selectedId, setSelectedId] = useState("PE-047");
+  const [openSector, setOpenSector] = useState(false);
   const [layers, setLayers] = useState(initialLayers);
   const [fadeKey, setFadeKey] = useState(0);
 
