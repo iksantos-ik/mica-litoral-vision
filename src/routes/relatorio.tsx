@@ -225,17 +225,109 @@ function ReportPage() {
     setFadeKey((k) => k + 1);
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     setGenerating(true);
     const label = version === "exec" ? "Executivo" : "Técnico Completo";
-    setTimeout(() => {
+    try {
+      const [{ default: jsPDF }, autoTableMod] = await Promise.all([
+        import("jspdf"),
+        import("jspdf-autotable"),
+      ]);
+      const autoTable = (autoTableMod as any).default ?? (autoTableMod as any);
+
+      const doc = new jsPDF({ unit: "pt", format: "a4" });
+      const pageW = doc.internal.pageSize.getWidth();
+      const now = new Date().toLocaleString("pt-BR");
+
+      // Header band
+      doc.setFillColor(15, 23, 42);
+      doc.rect(0, 0, pageW, 70, "F");
+      doc.setTextColor(94, 234, 212);
+      doc.setFontSize(9);
+      doc.text("PGIIC · PLATAFORMA GEOESPACIAL INTEGRADA DE INTELIGÊNCIA COSTEIRA", 40, 28);
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(16);
+      doc.text(`Relatório ${label} — ${sector.id}`, 40, 52);
+
+      doc.setTextColor(30, 41, 59);
+      doc.setFontSize(12);
+      doc.text(`${sector.name}`, 40, 100);
+      doc.setFontSize(10);
+      doc.setTextColor(71, 85, 105);
+      doc.text(`Município: ${sector.mun}  ·  Lat ${sector.lat}  ·  Lon ${sector.lon}  ·  Extensão ${sector.ext}`, 40, 118);
+      doc.text(`Emitido em: ${now}`, 40, 134);
+
+      // IIVC box
+      doc.setDrawColor(203, 213, 225);
+      doc.roundedRect(40, 150, 200, 80, 6, 6, "S");
+      doc.setFontSize(9);
+      doc.setTextColor(71, 85, 105);
+      doc.text("IIVC — Índice Integrado", 52, 170);
+      doc.setFontSize(32);
+      doc.setTextColor(15, 23, 42);
+      doc.text(String(sector.iivc), 52, 208);
+      doc.setFontSize(10);
+      doc.setTextColor(15, 118, 110);
+      doc.text(sector.klass, 120, 208);
+
+      // Domains table
+      autoTable(doc, {
+        startY: 250,
+        head: [["Domínio", "Valor normalizado"]],
+        body: sector.domains.map((d) => [d.name, String(d.v)]),
+        theme: "grid",
+        headStyles: { fillColor: [15, 23, 42], textColor: 255 },
+        styles: { fontSize: 10 },
+      });
+
+      let y = (doc as any).lastAutoTable.finalY + 24;
+      doc.setFontSize(11);
+      doc.setTextColor(15, 23, 42);
+      doc.text("Síntese diagnóstica", 40, y);
+      doc.setFontSize(10);
+      doc.setTextColor(51, 65, 85);
+      const lines = doc.splitTextToSize(sector.diagnosis, pageW - 80);
+      doc.text(lines, 40, y + 16);
+      y = y + 16 + lines.length * 13 + 16;
+
+      // Timeline table
+      autoTable(doc, {
+        startY: y,
+        head: [["Ano", "IIVC"]],
+        body: sector.timeline.map((t) => [String(t.y), String(t.v)]),
+        theme: "striped",
+        headStyles: { fillColor: [13, 148, 136], textColor: 255 },
+        styles: { fontSize: 9 },
+      });
+
+      if (version === "tec") {
+        doc.addPage();
+        doc.setFontSize(14);
+        doc.setTextColor(15, 23, 42);
+        doc.text("Indicadores técnicos — composição AHP", 40, 60);
+        autoTable(doc, {
+          startY: 80,
+          head: [["Indicador", "Valor bruto", "Normalizado", "Peso", "Domínio"]],
+          body: sector.indicators.map((i) => [i.k, i.raw, i.norm.toFixed(2), i.w.toFixed(2), i.dom]),
+          theme: "grid",
+          headStyles: { fillColor: [15, 23, 42], textColor: 255 },
+          styles: { fontSize: 9 },
+        });
+      }
+
+      const filename = `PGIIC_${sector.id}_${version === "exec" ? "Executivo" : "Tecnico"}.pdf`;
+      doc.save(filename);
+
       setGenerating(false);
       setModalOpen(false);
-      toast.success(`Relatório ${label} sendo gerado para ${sector.name}...`, {
+      toast.success(`Relatório ${label} gerado para ${sector.name}`, {
         duration: 4000,
         icon: <CheckCircle2 className="size-4 text-cyan" />,
       });
-    }, 2000);
+    } catch (e) {
+      setGenerating(false);
+      toast.error("Falha ao gerar o relatório.");
+    }
   };
 
   const max = Math.max(...sector.timeline.map((t) => t.v));
