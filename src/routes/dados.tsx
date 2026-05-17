@@ -436,8 +436,8 @@ function DadosPage() {
             </div>
             <div className="flex items-center gap-3 text-[11px] font-mono">
               <span className="inline-flex items-center gap-1.5 text-[color:var(--ok)]"><span className="size-1.5 rounded-full bg-[color:var(--ok)]" />{okCount} sincronizadas</span>
-              <span className="inline-flex items-center gap-1.5 text-[color:var(--warn)]"><span className="size-1.5 rounded-full bg-[color:var(--warn)]" />{sources.filter(s=>s.status==="wait").length} aguardando</span>
-              <span className="inline-flex items-center gap-1.5 text-[color:var(--danger)]"><span className="size-1.5 rounded-full bg-[color:var(--danger)]" />{sources.filter(s=>s.status==="err").length} erro</span>
+              <span className="inline-flex items-center gap-1.5 text-[color:var(--warn)]"><span className="size-1.5 rounded-full bg-[color:var(--warn)]" />{sources.filter(s => s.status === "wait").length} aguardando</span>
+              <span className="inline-flex items-center gap-1.5 text-[color:var(--danger)]"><span className="size-1.5 rounded-full bg-[color:var(--danger)]" />{sources.filter(s => s.status === "err").length} erro</span>
             </div>
           </div>
           <div className="overflow-auto">
