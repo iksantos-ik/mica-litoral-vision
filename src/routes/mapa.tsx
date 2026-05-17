@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { Shell } from "@/components/Shell";
-import { CoastMap, vulnLegend } from "@/components/CoastMap";
+import { CoastMap, vulnLegend, sectors } from "@/components/CoastMap";
 import {
-  Layers, ZoomIn, ZoomOut, Ruler, Pencil, Download, Play, X, Eye, EyeOff,
+  Layers, ZoomIn, ZoomOut, Ruler, Pencil, Download, Play, X, Eye, EyeOff, MapPin, ChevronDown,
 } from "lucide-react";
 
 export const Route = createFileRoute("/mapa")({
@@ -10,7 +11,7 @@ export const Route = createFileRoute("/mapa")({
   component: MapPage,
 });
 
-const layers = [
+const initialLayers = [
   { name: "Linha de Costa", on: true, color: "var(--cyan)" },
   { name: "IIVC · Vulnerabilidade", on: true, color: "var(--vuln-4)" },
   { name: "Erosão / Acreção", on: true, color: "var(--warn)" },
@@ -19,7 +20,34 @@ const layers = [
   { name: "Ocupação Territorial", on: false, color: "var(--cyan)" },
 ];
 
+const classColor: Record<string, string> = {
+  "Muito Baixo": "var(--vuln-1)",
+  "Baixo": "var(--vuln-2)",
+  "Moderado": "var(--vuln-3)",
+  "Alto": "var(--vuln-4)",
+  "Muito Alto": "var(--vuln-5)",
+};
+
 function MapPage() {
+  const [selectedId, setSelectedId] = useState("PE-047");
+  const [openSector, setOpenSector] = useState(false);
+  const [layers, setLayers] = useState(initialLayers);
+  const [fadeKey, setFadeKey] = useState(0);
+
+  const sector = sectors.find((s) => s.id === selectedId)!;
+  const color = classColor[sector.className];
+  const iivcLayerOn = layers.find((l) => l.name === "IIVC · Vulnerabilidade")?.on;
+
+  const handleSelect = (id: string) => {
+    if (id === selectedId) return;
+    setSelectedId(id);
+    setFadeKey((k) => k + 1);
+  };
+
+  const toggleLayer = (name: string) => {
+    setLayers((ls) => ls.map((l) => (l.name === name ? { ...l, on: !l.on } : l)));
+  };
+
   return (
     <Shell dense>
       <div className="relative h-[calc(100vh-4rem)] w-full bg-[color:var(--background)] overflow-hidden">
@@ -27,7 +55,7 @@ function MapPage() {
         <div className="absolute inset-0 scanline">
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="h-full aspect-[1/1.6]">
-              <CoastMap active="PE-047" />
+              <CoastMap active={selectedId} onSelect={handleSelect} hidden={!iivcLayerOn} />
             </div>
           </div>
         </div>
@@ -63,15 +91,29 @@ function MapPage() {
           </div>
           <div className="space-y-2">
             {layers.map((l) => (
-              <div key={l.name} className="panel-2 p-2.5 flex items-center gap-3">
-                <button className={`size-8 rounded-md flex items-center justify-center ${l.on ? "bg-teal/15 text-teal border border-teal/40" : "border border-border text-muted-foreground"}`}>
+              <div key={l.name} className="panel-2 p-2.5 flex items-center gap-3" style={{ transition: "opacity 150ms" }}>
+                <button
+                  onClick={() => toggleLayer(l.name)}
+                  className={`size-8 rounded-md flex items-center justify-center transition-all duration-150 ${
+                    l.on
+                      ? "bg-teal/15 text-teal border border-teal/40"
+                      : "border border-border text-muted-foreground hover:text-foreground"
+                  }`}
+                >
                   {l.on ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
                 </button>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{l.name}</div>
+                  <div className={`text-sm font-medium truncate transition-colors duration-150 ${l.on ? "" : "text-muted-foreground"}`}>{l.name}</div>
                   <div className="flex items-center gap-2 mt-1">
                     <div className="h-1 flex-1 rounded-full bg-[color:var(--surface)]">
-                      <div className="h-full rounded-full" style={{ width: l.on ? "70%" : "0%", background: l.color }} />
+                      <div
+                        className="h-full rounded-full transition-all duration-150"
+                        style={{
+                          width: l.on ? "70%" : "0%",
+                          background: l.on ? l.color : "var(--muted-foreground)",
+                          opacity: l.on ? 1 : 0.3,
+                        }}
+                      />
                     </div>
                     <span className="text-[10px] font-mono text-muted-foreground">{l.on ? "70%" : "—"}</span>
                   </div>
@@ -90,40 +132,71 @@ function MapPage() {
         </div>
 
         {/* Right panel - segment details */}
-        <div className="absolute top-4 right-4 w-80 panel p-4 max-h-[calc(100%-2rem)] overflow-auto">
+        <div key={fadeKey} className="absolute top-4 right-4 w-80 panel p-4 max-h-[calc(100%-2rem)] overflow-visible animate-fade-in">
+          {/* Sector selector */}
+          <div className="relative mb-3 z-30">
+            <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1.5">
+              <MapPin className="size-3 text-teal" /> // selecionar setor
+            </div>
+            <button
+              onClick={() => setOpenSector((o) => !o)}
+              className={`w-full h-9 px-2.5 rounded-md panel-2 border flex items-center justify-between text-xs transition-colors ${
+                openSector ? "border-cyan text-cyan" : "border-border hover:border-cyan/40"
+              }`}
+            >
+              <span className="font-mono truncate">
+                <span className={openSector ? "text-cyan" : "text-teal"}>{sector.id}</span>
+                <span className="text-foreground"> · {sector.name}</span>
+              </span>
+              <ChevronDown className={`size-3.5 shrink-0 ml-2 transition-transform duration-200 ${openSector ? "rotate-180 text-cyan" : "text-muted-foreground"}`} />
+            </button>
+            {openSector && (
+              <div className="absolute z-50 left-0 right-0 mt-1.5 panel p-1 bg-[color:var(--surface)] shadow-2xl max-h-72 overflow-auto animate-fade-in">
+                {sectors.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => { handleSelect(s.id); setOpenSector(false); }}
+                    className={`w-full text-left px-2.5 py-2 rounded text-xs flex items-center gap-2 hover:bg-[color:var(--surface-2)] ${
+                      s.id === selectedId ? "bg-cyan/10" : ""
+                    }`}
+                  >
+                    <span className="font-mono text-teal">{s.id}</span>
+                    <span className="truncate flex-1">{s.name}</span>
+                    <span className="size-2 rounded-sm shrink-0" style={{ background: `var(--vuln-${s.cls})` }} />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="flex items-start justify-between mb-3">
             <div>
               <div className="text-[10px] font-mono uppercase tracking-wider text-teal">setor selecionado</div>
-              <div className="text-sm font-semibold mt-0.5">PE-047 · Praia de Boa Viagem</div>
-              <div className="text-xs text-muted-foreground">Recife · zona urbana costeira</div>
+              <div className="text-sm font-semibold mt-0.5">{sector.id} · {sector.name}</div>
+              <div className="text-xs text-muted-foreground">{sector.municipality} · {sector.zone}</div>
             </div>
             <button className="size-7 rounded panel-2 flex items-center justify-center"><X className="size-3.5" /></button>
           </div>
           <div className="panel-2 p-4 flex items-center gap-4">
             <div className="size-16 rounded-full flex items-center justify-center text-xl font-semibold font-mono"
-                 style={{ background: "color-mix(in oklab, var(--vuln-4) 20%, transparent)", color: "var(--vuln-4)", border: "2px solid var(--vuln-4)" }}>
-              73
+                 style={{ background: `color-mix(in oklab, ${color} 20%, transparent)`, color, border: `2px solid ${color}` }}>
+              {sector.iivc}
             </div>
             <div>
               <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Pontuação IIVC</div>
-              <div className="text-sm font-semibold" style={{ color: "var(--vuln-4)" }}>Classe Alto</div>
-              <div className="text-[10px] font-mono text-muted-foreground mt-0.5">↑ +4,2 desde 2020</div>
+              <div className="text-sm font-semibold" style={{ color }}>Classe {sector.className}</div>
+              <div className="text-[10px] font-mono text-muted-foreground mt-0.5">↑ +{sector.delta.toFixed(1).replace(".", ",")} desde 2020</div>
             </div>
           </div>
 
           <div className="mt-4">
             <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-2">Variáveis dominantes</div>
             <div className="space-y-2">
-              {[
-                { k: "Recuo da linha de costa", v: 0.92 },
-                { k: "Densidade de edificações", v: 0.81 },
-                { k: "Cota altimétrica média", v: 0.74 },
-                { k: "Frequência de ressacas", v: 0.66 },
-              ].map((r) => (
+              {sector.variables.map((r) => (
                 <div key={r.k}>
                   <div className="flex justify-between text-xs"><span>{r.k}</span><span className="font-mono text-muted-foreground">{r.v.toFixed(2)}</span></div>
                   <div className="h-1 bg-[color:var(--surface-2)] rounded mt-1">
-                    <div className="h-full rounded" style={{ width: `${r.v * 100}%`, background: "var(--teal)" }} />
+                    <div className="h-full rounded transition-all duration-300" style={{ width: `${r.v * 100}%`, background: "var(--teal)" }} />
                   </div>
                 </div>
               ))}
