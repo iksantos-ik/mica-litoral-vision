@@ -166,9 +166,9 @@ function Dashboard() {
                 </li>
               ))}
             </ul>
-            <button className="mt-3 w-full h-9 rounded-md border border-border text-xs font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground hover:border-teal/40">
+            <Link to="/alertas" className="mt-3 w-full h-9 rounded-md border border-border text-xs font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground hover:border-teal/40 flex items-center justify-center transition-colors">
               Ver todos os 27 alertas
-            </button>
+            </Link>
           </div>
         </div>
 
