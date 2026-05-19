@@ -14,6 +14,7 @@ import { Route as MicaRouteImport } from './routes/mica'
 import { Route as MapaRouteImport } from './routes/mapa'
 import { Route as IaRouteImport } from './routes/ia'
 import { Route as DadosRouteImport } from './routes/dados'
+import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -42,6 +43,11 @@ const DadosRoute = DadosRouteImport.update({
   path: '/dados',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AlertasRoute = AlertasRouteImport.update({
+  id: '/alertas',
+  path: '/alertas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -56,6 +62,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/alertas': typeof AlertasRoute
   '/dados': typeof DadosRoute
   '/ia': typeof IaRoute
   '/mapa': typeof MapaRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/alertas': typeof AlertasRoute
   '/dados': typeof DadosRoute
   '/ia': typeof IaRoute
   '/mapa': typeof MapaRoute
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/alertas': typeof AlertasRoute
   '/dados': typeof DadosRoute
   '/ia': typeof IaRoute
   '/mapa': typeof MapaRoute
@@ -86,17 +95,27 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/alertas'
     | '/dados'
     | '/ia'
     | '/mapa'
     | '/mica'
     | '/relatorio'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/dados' | '/ia' | '/mapa' | '/mica' | '/relatorio'
+  to:
+    | '/'
+    | '/admin'
+    | '/alertas'
+    | '/dados'
+    | '/ia'
+    | '/mapa'
+    | '/mica'
+    | '/relatorio'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/alertas'
     | '/dados'
     | '/ia'
     | '/mapa'
@@ -107,6 +126,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  AlertasRoute: typeof AlertasRoute
   DadosRoute: typeof DadosRoute
   IaRoute: typeof IaRoute
   MapaRoute: typeof MapaRoute
@@ -151,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DadosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/alertas': {
+      id: '/alertas'
+      path: '/alertas'
+      fullPath: '/alertas'
+      preLoaderRoute: typeof AlertasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -171,6 +198,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  AlertasRoute: AlertasRoute,
   DadosRoute: DadosRoute,
   IaRoute: IaRoute,
   MapaRoute: MapaRoute,
