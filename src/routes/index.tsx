@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Shell } from "@/components/Shell";
 import { CoastMap, vulnLegend } from "@/components/CoastMap";
-import { ArrowUpRight, ArrowDownRight, Activity, AlertTriangle, Clock, MapPin, ChevronRight } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Activity, AlertTriangle, Clock, MapPin, ChevronRight, Expand } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -74,7 +74,7 @@ function Dashboard() {
                   )}
                   {k.trend === "flat" && <span className="text-xs font-mono text-muted-foreground">{k.delta}</span>}
                 </div>
-                <div className="mt-1 text-xs text-muted-foreground">{k.sub}</div>
+                <div className="mt-1 text-[12px] text-foreground/60">{k.sub}</div>
               </div>
             );
           })}
@@ -87,18 +87,29 @@ function Dashboard() {
                 <div className="text-[11px] font-mono uppercase tracking-[0.18em] text-muted-foreground">// mapa de vulnerabilidade · IIVC</div>
                 <h2 className="text-base font-semibold mt-1">Litoral de Pernambuco · Classes de Vulnerabilidade</h2>
               </div>
-              <div className="flex items-center gap-1 text-[10px] font-mono">
-                {vulnLegend.map((v) => (
-                  <div key={v.cls} className="flex items-center gap-1.5 px-2 py-1 rounded panel-2">
-                    <span className="size-2.5 rounded-sm" style={{ background: `var(--vuln-${v.cls})` }} />
-                    <span className="text-muted-foreground uppercase tracking-wider">{v.label}</span>
-                  </div>
-                ))}
-              </div>
             </div>
             <div className="grid grid-cols-[1fr_auto] gap-4 h-[480px]">
-              <div className="rounded-md panel-2 scanline overflow-hidden h-full">
+              <div className="relative rounded-md panel-2 scanline overflow-hidden h-full">
                 <CoastMap active="PE-047" />
+                
+                {/* Fade-out bottom */}
+                <div className="absolute bottom-0 left-0 right-0 h-[48px] bg-gradient-to-t from-background to-transparent pointer-events-none z-10" />
+                
+                {/* Floating Button Complete Map */}
+                <Link to="/mapa" className="absolute bottom-4 right-4 z-20 flex items-center gap-2 bg-background/80 backdrop-blur-md border border-border px-3 py-1.5 rounded-md text-xs font-semibold text-foreground hover:bg-teal hover:text-[color:var(--primary-foreground)] hover:border-teal transition-colors shadow-lg">
+                  <Expand className="size-3.5" />
+                  Ver mapa completo
+                </Link>
+
+                {/* Vulnerability Legend moved to map bottom left */}
+                <div className="absolute bottom-4 left-4 z-20 flex items-center gap-2 text-[10px] font-mono bg-background/80 backdrop-blur-md border border-border rounded-md px-[10px] py-[6px] shadow-lg">
+                  {vulnLegend.map((v) => (
+                    <div key={v.cls} className="flex items-center gap-1.5">
+                      <span className="size-2.5 rounded-sm" style={{ background: `var(--vuln-${v.cls})` }} />
+                      <span className="text-foreground/80 uppercase tracking-wider">{v.label}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="w-[140px] flex flex-col gap-2 text-[10px] font-mono">
                 <div className="panel-2 p-2.5">

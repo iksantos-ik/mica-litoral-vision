@@ -100,31 +100,33 @@ export function CoastMap({
   active,
   onSelect,
   hidden,
+  hiddenClasses,
 }: {
   active?: string;
   onSelect?: (id: string) => void;
   hidden?: boolean;
+  hiddenClasses?: number[];
 }) {
   return (
-    <svg viewBox="0 0 500 880" className="w-full h-full">
+    <svg viewBox="0 0 500 880" className="w-full h-full" preserveAspectRatio="xMidYMid meet" overflow="visible">
       <defs>
         <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
           <path d="M20 0 L0 0 0 20" fill="none" stroke="oklch(1 0 0 / 0.04)" strokeWidth="1" />
         </pattern>
-        <linearGradient id="ocean" x1="1" x2="0">
+        <linearGradient id="ocean" x1="500" x2="380" gradientUnits="userSpaceOnUse">
           <stop offset="0" stopColor="oklch(0.32 0.06 220 / 0.4)" />
           <stop offset="1" stopColor="oklch(0.20 0.04 240 / 0)" />
         </linearGradient>
       </defs>
-      <rect width="500" height="880" fill="url(#grid)" />
+      <rect x="-3000" y="-3000" width="6000" height="6000" fill="url(#grid)" />
       <path
-        d="M0 0 L 110 0 C 170 60, 250 90, 320 130 C 380 180, 380 280, 350 380 C 330 460, 260 520, 180 600 C 120 680, 80 780, 70 880 L 0 880 Z"
+        d="M-3000 -3000 L 110 -3000 L 110 0 C 170 60, 250 90, 320 130 C 380 180, 380 280, 350 380 C 330 460, 260 520, 180 600 C 120 680, 80 780, 70 880 L 70 3000 L -3000 3000 Z"
         fill="oklch(0.24 0.04 250)"
         stroke="oklch(1 0 0 / 0.06)"
       />
-      <rect x="380" y="0" width="120" height="880" fill="url(#ocean)" />
+      <rect x="380" y="-3000" width="3000" height="6000" fill="url(#ocean)" />
 
-      {!hidden && sectors.map((s) => {
+      {!hidden && sectors.filter(s => !hiddenClasses?.includes(s.cls)).map((s) => {
         const isActive = active === s.id;
         const color = vulnColors[s.cls - 1];
         return (
@@ -163,7 +165,7 @@ export function CoastMap({
         );
       })}
 
-      {!hidden && sectors.map((s) => {
+      {!hidden && sectors.filter(s => !hiddenClasses?.includes(s.cls)).map((s) => {
         const isActive = active === s.id;
         const [x, y] = s.labelAt;
         return (

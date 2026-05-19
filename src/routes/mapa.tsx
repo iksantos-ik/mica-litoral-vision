@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Shell } from "@/components/Shell";
 import { CoastMap, vulnLegend, sectors } from "@/components/CoastMap";
 import {
-  Layers, ZoomIn, ZoomOut, Ruler, Pencil, Download, Play, X, Eye, EyeOff, MapPin, ChevronDown,
+  Layers, ZoomIn, ZoomOut, Ruler, Pencil, Download, Play, X, Eye, EyeOff, MapPin, ChevronDown, ChevronLeft, ChevronRight
 } from "lucide-react";
 
 export const Route = createFileRoute("/mapa")({
@@ -33,10 +33,17 @@ function MapPage() {
   const [openSector, setOpenSector] = useState(false);
   const [layers, setLayers] = useState(initialLayers);
   const [fadeKey, setFadeKey] = useState(0);
+  const [leftPanelOpen, setLeftPanelOpen] = useState(true);
+  const [filters, setFilters] = useState({ high: true, medium: true, low: true });
 
   const sector = sectors.find((s) => s.id === selectedId)!;
   const color = classColor[sector.className];
   const iivcLayerOn = layers.find((l) => l.name === "IIVC · Vulnerabilidade")?.on;
+
+  const hiddenClasses = [];
+  if (!filters.high) hiddenClasses.push(4, 5);
+  if (!filters.medium) hiddenClasses.push(3);
+  if (!filters.low) hiddenClasses.push(1, 2);
 
   const handleSelect = (id: string) => {
     if (id === selectedId) return;
@@ -54,8 +61,8 @@ function MapPage() {
         {/* Map canvas */}
         <div className="absolute inset-0 scanline">
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-full aspect-[1/1.6]">
-              <CoastMap active={selectedId} onSelect={handleSelect} hidden={!iivcLayerOn} />
+            <div className="w-full h-full">
+              <CoastMap active={selectedId} onSelect={handleSelect} hidden={!iivcLayerOn} hiddenClasses={hiddenClasses} />
             </div>
           </div>
         </div>
@@ -84,50 +91,101 @@ function MapPage() {
         </div>
 
         {/* Left panel */}
-        <div className="absolute top-4 left-4 w-72 panel p-4 max-h-[calc(100%-2rem)] overflow-auto">
-          <div className="flex items-center gap-2 mb-3">
-            <Layers className="size-4 text-teal" />
-            <div className="text-[11px] font-mono uppercase tracking-[0.18em] text-muted-foreground">// gerenciador de camadas</div>
+        <div className={`absolute top-4 left-4 panel p-3 max-h-[calc(100%-2rem)] overflow-hidden transition-all duration-200 flex flex-col ${leftPanelOpen ? "w-72" : "w-[40px] items-center"}`}>
+          <div className="flex items-center justify-between mb-3 shrink-0">
+            {leftPanelOpen && (
+              <div className="flex items-center gap-2">
+                <Layers className="size-4 text-teal shrink-0" />
+                <div className="text-[11px] font-mono uppercase tracking-[0.18em] text-muted-foreground whitespace-nowrap">// gerenciador</div>
+              </div>
+            )}
+            <button onClick={() => setLeftPanelOpen(!leftPanelOpen)} className="size-6 rounded-md hover:bg-[color:var(--surface-2)] flex items-center justify-center text-muted-foreground shrink-0">
+              {leftPanelOpen ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}
+            </button>
           </div>
-          <div className="space-y-2">
+
+          <div className="space-y-1 overflow-y-auto overflow-x-hidden flex-1 min-h-0 pr-1 -mr-1">
             {layers.map((l) => (
-              <div key={l.name} className="panel-2 p-2.5 flex items-center gap-3" style={{ transition: "opacity 150ms" }}>
+              <div key={l.name} className={`panel-2 flex items-center gap-3 transition-opacity duration-150 ${leftPanelOpen ? "py-2 px-2.5" : "p-0.5 border-none bg-transparent"}`}>
                 <button
                   onClick={() => toggleLayer(l.name)}
-                  className={`size-8 rounded-md flex items-center justify-center transition-all duration-150 ${
+                  className={`size-7 rounded-md shrink-0 flex items-center justify-center transition-all duration-150 ${
                     l.on
                       ? "bg-teal/15 text-teal border border-teal/40"
                       : "border border-border text-muted-foreground hover:text-foreground"
                   }`}
+                  title={!leftPanelOpen ? l.name : undefined}
                 >
-                  {l.on ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
+                  {l.on ? <Eye className="size-3.5" /> : <EyeOff className="size-3.5" />}
                 </button>
-                <div className="flex-1 min-w-0">
-                  <div className={`text-sm font-medium truncate transition-colors duration-150 ${l.on ? "" : "text-muted-foreground"}`}>{l.name}</div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className="h-1 flex-1 rounded-full bg-[color:var(--surface)]">
-                      <div
-                        className="h-full rounded-full transition-all duration-150"
-                        style={{
-                          width: l.on ? "70%" : "0%",
-                          background: l.on ? l.color : "var(--muted-foreground)",
-                          opacity: l.on ? 1 : 0.3,
-                        }}
-                      />
+                {leftPanelOpen && (
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-sm font-medium truncate transition-colors duration-150 ${l.on ? "" : "text-muted-foreground"}`}>{l.name}</div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="h-1 flex-1 rounded-full bg-[color:var(--surface)]">
+                        <div
+                          className="h-full rounded-full transition-all duration-150"
+                          style={{ width: l.on ? "70%" : "0%", background: l.on ? l.color : "var(--muted-foreground)", opacity: l.on ? 1 : 0.3 }}
+                        />
+                      </div>
+                      <span className="text-[10px] font-mono text-muted-foreground">{l.on ? "70%" : "—"}</span>
                     </div>
-                    <span className="text-[10px] font-mono text-muted-foreground">{l.on ? "70%" : "—"}</span>
                   </div>
-                </div>
+                )}
               </div>
             ))}
-          </div>
-          <div className="mt-4 pt-3 border-t border-border">
-            <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-2">Basemap</div>
-            <div className="grid grid-cols-3 gap-1.5">
-              {["Escuro", "Satélite", "Topo"].map((b, i) => (
-                <button key={b} className={`h-8 rounded text-[10px] font-mono uppercase tracking-wider ${i === 0 ? "bg-teal text-[color:var(--primary-foreground)]" : "panel-2 text-muted-foreground"}`}>{b}</button>
-              ))}
-            </div>
+
+            {leftPanelOpen && (
+              <>
+                <div className="mt-4 pt-3 border-t border-border">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-2">Basemap</div>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {["Escuro", "Satélite", "Topo"].map((b, i) => (
+                      <button key={b} className={`h-8 rounded text-[10px] font-mono uppercase tracking-wider ${i === 0 ? "bg-teal text-[color:var(--primary-foreground)]" : "panel-2 text-muted-foreground"}`}>{b}</button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Resumo do litoral */}
+                <div className="mt-4 pt-3 border-t border-border">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-2">Resumo do litoral</div>
+                  <div className="space-y-1 text-xs">
+                    <div className="flex justify-between"><span>Setores monitorados:</span> <span className="font-mono">342</span></div>
+                    <div className="flex justify-between text-[color:var(--danger)] font-medium"><span>Em alerta:</span> <span className="font-mono">27</span></div>
+                    <div className="flex justify-between"><span>IIVC médio:</span> <span className="font-mono">62,4</span></div>
+                  </div>
+                  <div className="flex h-1 mt-2 rounded-full overflow-hidden opacity-80">
+                    <div className="h-full bg-[color:var(--vuln-1)]" style={{ width: "30%" }} />
+                    <div className="h-full bg-[color:var(--vuln-2)]" style={{ width: "25%" }} />
+                    <div className="h-full bg-[color:var(--vuln-3)]" style={{ width: "20%" }} />
+                    <div className="h-full bg-[color:var(--vuln-4)]" style={{ width: "15%" }} />
+                    <div className="h-full bg-[color:var(--vuln-5)]" style={{ width: "10%" }} />
+                  </div>
+                </div>
+
+                {/* Filtros rápidos */}
+                <div className="mt-4 pt-3 border-t border-border">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-2">Filtros rápidos</div>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
+                      <input type="checkbox" className="accent-teal cursor-pointer" checked={filters.high} onChange={e => setFilters(f => ({ ...f, high: e.target.checked }))} />
+                      <span className="size-2 rounded-full bg-[color:var(--vuln-4)]" />
+                      Alto risco
+                    </label>
+                    <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
+                      <input type="checkbox" className="accent-teal cursor-pointer" checked={filters.medium} onChange={e => setFilters(f => ({ ...f, medium: e.target.checked }))} />
+                      <span className="size-2 rounded-full bg-[color:var(--vuln-3)]" />
+                      Moderado
+                    </label>
+                    <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
+                      <input type="checkbox" className="accent-teal cursor-pointer" checked={filters.low} onChange={e => setFilters(f => ({ ...f, low: e.target.checked }))} />
+                      <span className="size-2 rounded-full bg-[color:var(--vuln-1)]" />
+                      Baixo / Muito baixo
+                    </label>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
 

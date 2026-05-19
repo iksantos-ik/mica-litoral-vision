@@ -29,7 +29,7 @@ export function Shell({ children, dense = false }: { children: ReactNode; dense?
   const path = useRouterState({ select: (s) => s.location.pathname });
   return (
     <div className="min-h-screen flex w-full text-foreground">
-      <aside className="w-[72px] xl:w-[230px] shrink-0 border-r border-border bg-[color:var(--surface)]/60 backdrop-blur flex flex-col">
+      <aside className="w-[72px] xl:w-[230px] shrink-0 border-r border-border bg-[color:var(--surface)]/60 backdrop-blur flex flex-col relative pb-[80px]">
         <div className="h-16 flex items-center gap-2 px-4 border-b border-border">
           <div className="size-9 rounded-md bg-gradient-to-br from-teal to-cyan flex items-center justify-center glow-teal">
             <Waves className="size-5 text-[color:var(--primary-foreground)]" />
@@ -59,7 +59,7 @@ export function Shell({ children, dense = false }: { children: ReactNode; dense?
             );
           })}
         </nav>
-        <div className="p-3 border-t border-border hidden xl:block">
+        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-border hidden xl:block bg-[color:var(--surface)]/60 backdrop-blur">
           <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-1">Operador</div>
           <div className="text-xs font-medium">SECMA · PE</div>
           <div className="text-[10px] text-muted-foreground font-mono">sessão · 04:21:18</div>
